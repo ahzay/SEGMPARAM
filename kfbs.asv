@@ -1,0 +1,38 @@
+function [P,Sigma,bp] = kfbs(P0,Sigma0,Xp,mi,Q,W,tol)
+%KFBS Summary of this function goes here
+%   Detailed explanation goes here
+
+    I = eye(size(Sigma0));
+    bp = 0;
+    Pk_plus = zeros(size(P0));
+    Sigmak_plus
+    
+    % Propagation
+    Pk = P0;
+    Sigmak = Sigma0 + Q;
+    
+    Hk = Hkj(Xp,mi,Pk);
+    Jk = Jkj(Xp,mi,Pk);
+    
+    %Observations
+    rk = -Fs(Xp,mi,Pk);
+    Sk = Hk*Sigmak*Hk' + Jk*W*Jk';
+    
+    % Mahalanobis distance
+    m_dist = mahalanobisdist(Xp,mi,Pk,Sk);
+    
+    if m_dist > tol
+        bp = 1;
+    else
+        % Gain
+        Kk = Sigmak * Hk'/Sk;
+
+        % Update
+        Pk_plus = Pk + Kk*rk;
+        Sigmak_plus = (I - Kk*Hk)* Sigma0;
+    end
+
+    Sigma = [Sigmak, Sigmak_plus];
+    P = [Pk, Pk_plus];
+end
+
